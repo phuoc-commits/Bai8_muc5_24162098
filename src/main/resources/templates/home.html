@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Store | Trang chủ</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #102a43; --muted: #6b7c93; --line: #e6edf3; --paper: #f5f8fb; --teal: #0f9d8a; --navy: #12304a; --orange: #f29f67; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'DM Sans', sans-serif; }
+        a { color: inherit; text-decoration: none; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 248px; padding: 28px 18px; color: #dbe9f2; background: var(--navy); display: flex; flex-direction: column; }
+        .brand { display: flex; align-items: center; gap: 12px; padding: 0 12px 30px; color: white; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; }
+        .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; color: var(--navy); background: var(--orange); border-radius: 11px; font-size: 20px; }
+        .nav-label { padding: 0 12px 10px; color: #87a2b5; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+        .nav-link { display: flex; align-items: center; gap: 12px; margin: 3px 0; padding: 12px; border-radius: 10px; color: #b8ccd9; font-size: 14px; transition: background .2s, color .2s; }
+        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,.12); }
+        .nav-icon { width: 20px; text-align: center; font-size: 17px; }
+        .side-note { margin-top: auto; padding: 16px; color: #b8ccd9; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.06); font-size: 12px; line-height: 1.6; }
+        .side-note strong { display: block; margin-bottom: 4px; color: white; }
+        .main { flex: 1; min-width: 0; padding: 38px clamp(22px, 5vw, 68px); }
+        .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 34px; }
+        .eyebrow { margin: 0 0 8px; color: var(--teal); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+        h1 { margin: 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 4vw, 42px); line-height: 1.08; }
+        .intro { max-width: 560px; margin: 12px 0 0; color: var(--muted); font-size: 15px; }
+        .api-pill { padding: 10px 14px; color: var(--teal); border: 1px solid #bce5dd; border-radius: 999px; background: #eaf8f5; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 22px; }
+        .toolbar-label { margin-right: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+        .category-input { width: 165px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; outline: none; background: white; font: inherit; }
+        .category-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,157,138,.12); }
+        .btn { padding: 11px 16px; border: 0; border-radius: 9px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+        .btn-primary { color: white; background: var(--teal); }
+        .btn-quiet { color: var(--ink); border: 1px solid var(--line); background: white; }
+        .btn:hover { filter: brightness(.96); transform: translateY(-1px); }
+        .section-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 14px; }
+        .section-head h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; }
+        .status { color: var(--muted); font-size: 13px; }
+        #product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+        .product-card { min-height: 190px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: white; box-shadow: 0 8px 24px rgba(16,42,67,.045); transition: transform .2s, box-shadow .2s; animation: rise .35s ease both; }
+        .product-card:hover { box-shadow: 0 14px 30px rgba(16,42,67,.1); transform: translateY(-3px); }
+        .product-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .product-card h3 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; }
+        .product-id { color: #9badbd; font-size: 11px; }
+        .price { margin: 24px 0 8px; color: var(--teal); font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; }
+        .description { min-height: 38px; margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+        .category-tag { display: inline-block; padding: 6px 9px; color: #a75c28; border-radius: 6px; background: #fff0e5; font-size: 11px; font-weight: 700; }
+        .empty { grid-column: 1 / -1; padding: 48px; color: var(--muted); border: 1px dashed #cbd8e2; border-radius: 14px; background: white; text-align: center; }
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 760px) { .layout { display: block; } .sidebar { width: 100%; padding: 16px; } .brand { padding-bottom: 16px; } .nav-label, .side-note { display: none; } .nav-link { display: inline-flex; margin: 2px; padding: 9px 10px; } .main { padding: 28px 18px; } .topbar { display: block; } .api-pill { display: inline-block; margin-top: 18px; } }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <a class="brand" href="/"><span class="brand-mark">⌁</span><span>GraphQL Store</span></a>
+        <div class="nav-label">Điều hướng</div>
+        <nav>
+            <a class="nav-link active" href="/"><span class="nav-icon">⌂</span>Trang chủ</a>
+            <a class="nav-link" href="/admin/products"><span class="nav-icon">▣</span>Quản lý sản phẩm</a>
+            <a class="nav-link" href="/admin/categories"><span class="nav-icon">◆</span>Quản lý danh mục</a>
+            <a class="nav-link" href="/graphiql" target="_blank"><span class="nav-icon">⌘</span>GraphiQL Tool</a>
+        </nav>
+        <div class="side-note"><strong>GraphQL API</strong>Dữ liệu được tải trực tiếp bằng AJAX từ endpoint `/graphql`.</div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Product overview</p>
+                <h1>Kho sản phẩm</h1>
+                <p class="intro">Khám phá danh sách sản phẩm được sắp xếp theo giá, hoặc lọc nhanh theo danh mục.</p>
+            </div>
+            <div class="api-pill">● API đang kết nối</div>
+        </header>
+
+        <section class="toolbar" aria-label="Bộ lọc sản phẩm">
+            <span class="toolbar-label">Xem theo:</span>
+            <button class="btn btn-primary" onclick="loadProductsSortedByPrice()">Giá thấp đến cao</button>
+            <input class="category-input" type="number" id="categoryId" placeholder="ID danh mục">
+            <button class="btn btn-quiet" onclick="loadProductsByCategory()">Lọc danh mục</button>
+        </section>
+
+        <div class="section-head"><h2>Sản phẩm</h2><span class="status" id="result-status">Đang tải dữ liệu...</span></div>
+        <div id="product-list"></div>
+    </main>
+</div>
+
+<script>
+    async function fetchGraphQL(query, variables = {}) {
+        const response = await fetch('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, variables }) });
+        const result = await response.json();
+        if (result.errors) throw new Error(result.errors[0].message);
+        return result.data;
+    }
+
+    function renderProducts(products) {
+        const list = document.getElementById('product-list');
+        document.getElementById('result-status').textContent = `${products?.length || 0} sản phẩm`;
+        if (!products || products.length === 0) {
+            list.innerHTML = '<div class="empty">Không tìm thấy sản phẩm phù hợp.</div>';
+            return;
+        }
+        list.innerHTML = products.map((product, index) => `
+            <article class="product-card" style="animation-delay: ${index * 35}ms">
+                <div class="product-top"><h3>${product.title}</h3><span class="product-id">#${product.id}</span></div>
+                <div class="price">${Number(product.price).toLocaleString('vi-VN')} VNĐ</div>
+                <p class="description">${product.description || 'Chưa có mô tả cho sản phẩm này.'}</p>
+                <span class="category-tag">${product.category ? product.category.name : 'Chưa phân loại'}</span>
+            </article>`).join('');
+    }
+
+    async function loadProductsSortedByPrice() {
+        document.getElementById('result-status').textContent = 'Đang tải...';
+        try {
+            const data = await fetchGraphQL(`query { productsSortedByPriceAsc { id title price description category { name } } }`);
+            renderProducts(data.productsSortedByPriceAsc);
+        } catch (error) { document.getElementById('result-status').textContent = error.message; }
+    }
+
+    async function loadProductsByCategory() {
+        const categoryId = document.getElementById('categoryId').value;
+        if (!categoryId) { alert('Vui lòng nhập Category ID'); return; }
+        document.getElementById('result-status').textContent = 'Đang lọc...';
+        try {
+            const data = await fetchGraphQL(`query($categoryId: ID!) { productsByCategoryId(categoryId: $categoryId) { id title price description category { name } } }`, { categoryId });
+            renderProducts(data.productsByCategoryId);
+        } catch (error) { document.getElementById('result-status').textContent = error.message; }
+    }
+
+    loadProductsSortedByPrice();
+</script>
+</body>
+</html>

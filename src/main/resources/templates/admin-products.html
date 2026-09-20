@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Sản Phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #102a43; --muted: #6b7c93; --line: #e6edf3; --paper: #f5f8fb; --teal: #0f9d8a; --navy: #12304a; --orange: #f29f67; }
+        * { box-sizing: border-box; }
+        body.admin-page { margin: 0; color: var(--ink); background: var(--paper) !important; font-family: 'DM Sans', sans-serif; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 248px; padding: 28px 18px; color: #dbe9f2; background: var(--navy); display: flex; flex-direction: column; flex-shrink: 0; }
+        .admin-brand { display: flex; align-items: center; gap: 12px; padding: 0 12px 30px; color: white; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; text-decoration: none; }
+        .admin-brand-mark { width: 36px; height: 36px; display: grid; place-items: center; color: var(--navy); background: var(--orange); border-radius: 11px; font-size: 20px; }
+        .admin-nav-label { padding: 0 12px 10px; color: #87a2b5; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+        .admin-nav-link { display: flex; align-items: center; gap: 12px; margin: 3px 0; padding: 12px; border-radius: 10px; color: #b8ccd9; font-size: 14px; text-decoration: none; }
+        .admin-nav-link:hover, .admin-nav-link.active { color: white; background: rgba(255,255,255,.12); }
+        .admin-nav-icon { width: 20px; text-align: center; font-size: 17px; }
+        .admin-side-note { margin-top: auto; padding: 16px; color: #b8ccd9; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.06); font-size: 12px; line-height: 1.6; }
+        .admin-side-note strong { display: block; color: white; }
+        .admin-main { flex: 1; min-width: 0; padding: 38px clamp(22px, 5vw, 68px); }
+        .admin-content { max-width: 1350px; margin: auto; }
+        .admin-heading h2 { margin: 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 4vw, 40px); }
+        .admin-heading p { color: var(--muted) !important; }
+        .admin-toolbar { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+        .admin-page .card { border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: 0 8px 24px rgba(16,42,67,.05) !important; }
+        .admin-page .table { margin: 0; color: var(--ink); }
+        .admin-page .table thead th { padding-top: 15px; padding-bottom: 15px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: .7px; text-transform: uppercase; }
+        .admin-page .table tbody td { padding-top: 15px; padding-bottom: 15px; border-color: var(--line); font-size: 13px; }
+        .admin-page .table-hover tbody tr:hover { background: #f7fbfc; }
+        .admin-page .btn-primary { border-color: var(--teal); background: var(--teal); }
+        .admin-page .btn-outline-primary { color: var(--teal); border-color: #8bd5ca; }
+        .admin-page .btn-outline-primary:hover { color: white; border-color: var(--teal); background: var(--teal); }
+        .admin-page .form-control, .admin-page .form-select { border-color: var(--line); border-radius: 9px; }
+        .admin-page .modal-content { border: 0; border-radius: 15px; box-shadow: 0 20px 60px rgba(16,42,67,.2); }
+        @media (max-width: 760px) { .admin-layout { display: block; } .admin-sidebar { width: 100%; padding: 16px; } .admin-brand { padding-bottom: 16px; } .admin-nav-label, .admin-side-note { display: none; } .admin-nav-link { display: inline-flex; margin: 2px; padding: 9px 10px; } .admin-main { padding: 28px 18px; } }
+    </style>
+</head>
+<body class="admin-page">
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a class="admin-brand" href="/"><span class="admin-brand-mark">⌁</span><span>GraphQL Store</span></a>
+            <div class="admin-nav-label">Điều hướng</div>
+            <nav>
+                <a class="admin-nav-link" href="/"><span class="admin-nav-icon">⌂</span>Trang chủ</a>
+                <a class="admin-nav-link active" href="/admin/products"><span class="admin-nav-icon">▣</span>Quản lý sản phẩm</a>
+                <a class="admin-nav-link" href="/admin/categories"><span class="admin-nav-icon">◆</span>Quản lý danh mục</a>
+                <a class="admin-nav-link" href="/graphiql" target="_blank"><span class="admin-nav-icon">⌘</span>GraphiQL Tool</a>
+            </nav>
+            <div class="admin-side-note"><strong>Product workspace</strong>Quản lý kho sản phẩm qua GraphQL API.</div>
+        </aside>
+        <main class="admin-main"><div class="admin-content">
+        <div class="admin-heading d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Quản Lý Sản Phẩm</h2>
+                <p class="text-muted mb-0">Danh sách sản phẩm trong hệ thống</p>
+            </div>
+            <div>
+                <a href="/" class="btn btn-outline-secondary me-2">Trang Chủ</a>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="openProductModal()">
+                    + Thêm Sản Phẩm Mới
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-toolbar row g-2 mb-3">
+            <div class="col-md-8">
+                <input id="productKeyword" class="form-control" placeholder="Tìm theo tên sản phẩm...">
+            </div>
+            <div class="col-md-2">
+                <select id="productPageSize" class="form-select">
+                    <option value="5">5 / trang</option>
+                    <option value="10">10 / trang</option>
+                    <option value="20">20 / trang</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" onclick="searchProducts()">Tìm kiếm</button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4" style="width: 10%;">ID</th>
+                                <th style="width: 30%;">Tên Sản Phẩm</th>
+                                <th style="width: 20%;">Danh Mục</th>
+                                <th style="width: 15%;">Giá Ban</th>
+                                <th style="width: 10%;">Số Lượng</th>
+                                <th style="width: 20%;">Mô Tả</th>
+                                <th style="width: 15%;">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productList">
+                            <!-- Dữ liệu sẽ nạp tự động qua JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="productPagination" class="d-flex justify-content-center align-items-center gap-2 py-3"></div>
+        </div></main>
+    </div>
+
+    <!-- Modal Thêm/Sửa Sản Phẩm -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="productModalTitle">Thêm Sản Phẩm Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="prodTitle" class="form-label fw-semibold">Tên Sản Phẩm</label>
+                        <input type="text" class="form-control" id="prodTitle" placeholder="iPhone 15 Pro Max...">
+                    </div>
+                    <div class="mb-3">
+                        <label for="prodCategory" class="form-label fw-semibold">Danh Mục</label>
+                        <select class="form-select" id="prodCategory">
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prodPrice" class="form-label fw-semibold">Giá (VNĐ)</label>
+                        <input type="number" class="form-control" id="prodPrice" placeholder="25000000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="prodQuantity" class="form-label fw-semibold">Số Lượng</label>
+                        <input type="number" min="0" class="form-control" id="prodQuantity" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="prodDesc" class="form-label fw-semibold">Mô Tả</label>
+                        <textarea class="form-control" id="prodDesc" rows="3" placeholder="Nhập thông tin mô tả..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="submitProduct()">Lưu Sản Phẩm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let productPage = 0;
+
+        async function loadProducts(page = productPage) {
+            productPage = page;
+            const keyword = document.getElementById('productKeyword')?.value || '';
+            const size = Number(document.getElementById('productPageSize')?.value || 5);
+            const query = {
+                query: `
+                    query SearchProducts($keyword: String, $page: Int, $size: Int) {
+                        searchProducts(keyword: $keyword, page: $page, size: $size) {
+                            totalPages
+                            currentPage
+                            content {
+                                id
+                                title
+                                price
+                                quantity
+                                description
+                                category {
+                                    id
+                                    name
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: { keyword, page, size }
+            };
+
+            try {
+                const res = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(query)
+                });
+                const result = await res.json();
+                
+                const products = result.data?.searchProducts?.content || [];
+                const tbody = document.getElementById('productList');
+
+                if (!tbody) return;
+
+                if (products.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Không có sản phẩm nào. Hãy tạo sản phẩm đầu tiên!</td></tr>`;
+                    return;
+                }
+
+                renderProductPagination(result.data.searchProducts.totalPages, result.data.searchProducts.currentPage);
+
+                tbody.innerHTML = products.map(p => `
+                    <tr>
+                        <td class="ps-4 fw-bold">#${p.id}</td>
+                        <td class="fw-semibold">${p.title}</td>
+                        <td><span class="badge bg-info-subtle text-info border border-info-subtle">${p.category ? p.category.name : 'Chưa phân loại'}</span></td>
+                        <td class="text-success font-monospace fw-bold">${Number(p.price).toLocaleString()} VNĐ</td>
+                        <td class="text-center">${p.quantity}</td>
+                        <td class="text-muted">${p.description || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick='openProductModal(${JSON.stringify(p)})'>Sửa</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})">Xóa</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Lỗi tải sản phẩm:", err);
+            }
+        }
+
+        function searchProducts() {
+            loadProducts(0);
+        }
+
+        function renderProductPagination(totalPages, currentPage) {
+            const pagination = document.getElementById('productPagination');
+            if (!pagination || totalPages <= 1) {
+                if (pagination) pagination.innerHTML = '';
+                return;
+            }
+            pagination.innerHTML = `
+                <button class="btn btn-sm btn-outline-secondary" ${currentPage === 0 ? 'disabled' : ''} onclick="loadProducts(${currentPage - 1})">Trước</button>
+                <span>Trang ${currentPage + 1} / ${totalPages}</span>
+                <button class="btn btn-sm btn-outline-secondary" ${currentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadProducts(${currentPage + 1})">Sau</button>`;
+        }
+
+        async function loadCategoriesForSelect() {
+            const query = {
+                query: `
+                    query {
+                        searchCategories(keyword: "", page: 0, size: 100) {
+                            content {
+                                id
+                                name
+                            }
+                        }
+                    }
+                `
+            };
+
+            try {
+                const res = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(query)
+                });
+                const result = await res.json();
+                const categories = result.data?.searchCategories?.content || [];
+                
+                const select = document.getElementById('prodCategory');
+                if (select) {
+                    select.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+                    categories.forEach(c => {
+                        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Lỗi nạp danh mục:', err);
+            }
+        }
+
+        let editingProductId = null;
+
+        async function openProductModal(product = null) {
+            editingProductId = product?.id || null;
+            document.getElementById('productModalTitle').textContent = editingProductId ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới';
+            document.getElementById('prodTitle').value = product?.title || '';
+            document.getElementById('prodPrice').value = product?.price ?? '';
+            document.getElementById('prodQuantity').value = product?.quantity ?? 0;
+            document.getElementById('prodDesc').value = product?.description || '';
+            await loadCategoriesForSelect();
+            if (product?.category?.id) {
+                document.getElementById('prodCategory').value = product.category.id;
+            }
+            if (editingProductId) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('addProductModal')).show();
+            }
+        }
+
+        async function submitProduct() {
+            const title = document.getElementById('prodTitle').value.trim();
+            const categoryId = document.getElementById('prodCategory').value;
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const quantity = parseInt(document.getElementById('prodQuantity').value, 10);
+            const description = document.getElementById('prodDesc').value.trim();
+
+            if (!title || isNaN(price) || isNaN(quantity) || quantity < 0) {
+                alert('Vui lòng nhập Tên, Giá và Số lượng hợp lệ!');
+                return;
+            }
+
+            if (!categoryId) {
+                alert('Vui lòng chọn Danh mục sản phẩm!');
+                return;
+            }
+
+            const requestBody = {
+                query: `
+                    mutation SaveProduct($input: ProductInput!) {
+                        ${editingProductId ? 'updateProduct' : 'createProduct'}(input: $input) {
+                            id
+                            title
+                        }
+                    }
+                `,
+                variables: {
+                    input: {
+                        title: title,
+                        price: price,
+                        quantity: quantity,
+                        description: description,
+                        images: "",
+                        categoryId: categoryId,
+                        ...(editingProductId ? { id: editingProductId } : {})
+                    }
+                }
+            };
+
+            try {
+                const res = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                const result = await res.json();
+                
+                if (result.errors) {
+                    alert('Lỗi: ' + result.errors[0].message);
+                } else {
+                    alert(editingProductId ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm thành công!');
+                    document.getElementById('prodTitle').value = '';
+                    document.getElementById('prodPrice').value = '';
+                    document.getElementById('prodQuantity').value = 0;
+                    document.getElementById('prodDesc').value = '';
+                    document.getElementById('prodCategory').value = '';
+                    editingProductId = null;
+
+                    const modalEl = document.getElementById('addProductModal');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }
+
+                    loadProducts();
+                }
+            } catch (err) {
+                alert('Lỗi kết nối Server: ' + err.message);
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: 'mutation($id: ID!) { deleteProduct(id: $id) }',
+                    variables: { id: id }
+                })
+            });
+            const result = await response.json();
+            if (result.errors || !result.data?.deleteProduct) {
+                alert(result.errors?.[0]?.message || 'Không tìm thấy sản phẩm.');
+                return;
+            }
+            loadProducts();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadCategoriesForSelect();
+            document.getElementById('productKeyword').addEventListener('keydown', event => {
+                if (event.key === 'Enter') searchProducts();
+            });
+        });
+    </script>
+</body>
+</html>

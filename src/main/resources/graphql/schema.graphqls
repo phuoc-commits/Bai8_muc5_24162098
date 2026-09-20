@@ -1,0 +1,66 @@
+type Category {
+    id: ID!
+    name: String!
+    products: [Product]
+}
+
+type Product {
+    id: ID!
+    title: String!
+    price: Float!
+    quantity: Int!
+    description: String
+    images: String
+    category: Category
+}
+
+type CategoryPage {
+    content: [Category]
+    totalPages: Int
+    totalElements: Int
+    currentPage: Int
+}
+
+type ProductPage {
+    content: [Product]
+    totalPages: Int
+    totalElements: Int
+    currentPage: Int
+}
+
+input ProductInput {
+    id: ID
+    title: String!
+    price: Float!
+    quantity: Int!
+    description: String
+    images: String
+    categoryId: ID!
+}
+
+input CategoryInput {
+    id: ID
+    name: String!
+}
+
+type Query {
+    # Trang Home
+    productsSortedByPriceAsc: [Product]
+    productsByCategoryId(categoryId: ID!): [Product]
+    
+    # Phân trang & Tìm kiếm
+    searchProducts(keyword: String, page: Int = 0, size: Int = 5): ProductPage
+    searchCategories(keyword: String, page: Int = 0, size: Int = 5): CategoryPage
+}
+
+type Mutation {
+    # Product CRUD
+    createProduct(input: ProductInput!): Product
+    updateProduct(input: ProductInput!): Product
+    deleteProduct(id: ID!): Boolean
+
+    # Category CRUD
+    createCategory(input: CategoryInput!): Category
+    updateCategory(input: CategoryInput!): Category
+    deleteCategory(id: ID!): Boolean
+}

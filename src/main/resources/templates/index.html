@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý - Spring Boot GraphQL</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { min-height: 100vh; background-color: #2c3e50; color: white; }
+        .sidebar a { color: #b8c7ce; text-decoration: none; padding: 12px 20px; display: block; }
+        .sidebar a:hover, .sidebar a.active { background-color: #1a252f; color: white; border-left: 4px solid #3498db; }
+        .card-custom { border-radius: 10px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table-hover tbody tr:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-2 p-0 sidebar d-none d-md-block">
+            <div class="p-3 fs-5 fw-bold text-center border-bottom border-secondary">
+                <i class="fa-solid fa-cubes text-info me-2"></i>Admin Panel
+            </div>
+            <div class="mt-3">
+               <!-- MỚI (đã gắn đường dẫn chính xác) -->
+<a href="/" class="active"><i class="fa-solid fa-gauge me-2"></i> Bảng điều khiển</a>
+<a href="/admin/products"><i class="fa-solid fa-box me-2"></i> Quản lý Sản phẩm</a>
+<a href="/admin/categories"><i class="fa-solid fa-tags me-2"></i> Quản lý Danh mục</a>
+<a href="/graphiql" target="_blank"><i class="fa-solid fa-terminal me-2"></i> GraphiQL Tool</a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-10 ms-sm-auto p-4">
+            <!-- Header Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">Quản Lý Dữ Liệu GraphQL</h3>
+                    <small class="text-muted">Giao diện kết nối Spring Boot Service</small>
+                </div>
+                <button class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                    <i class="fa-solid fa-plus me-1"></i> Thêm Bản Ghi Mới
+                </button>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="card card-custom p-3 mb-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Nhập từ khóa tìm kiếm...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-secondary w-100" onclick="loadData()">
+                            <i class="fa-solid fa-rotate me-1"></i> Làm mới dữ liệu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div class="card card-custom">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Thông Tin Main</th>
+                                    <th>Chi Tiết / Phụ Lục</th>
+                                    <th class="text-end pe-4">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-spinner fa-spin me-2"></i> Đang tải dữ liệu từ GraphQL...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Mới Dữ Liệu -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus-circle text-primary me-2"></i>Thêm Dữ Liệu Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Tên / Tiêu đề</label>
+                        <input type="text" id="inputTitle" class="form-control" placeholder="Nhập tiêu đề..." required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="submitData()">Lưu Lại</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script Gọi GraphQL API -->
+<!-- Modal Thêm Mới Dữ Liệu -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus-circle text-primary me-2"></i>Thêm Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Tên / Tiêu đề</label>
+                        <input type="text" id="inputTitle" class="form-control" placeholder="Nhập tên..." required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="submitData()">Lưu Lại</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadData() {
+        const tbody = document.getElementById('dataTableBody');
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i> Đang tải dữ liệu...</td></tr>`;
+
+        const graphqlQuery = {
+            query: `
+                query {
+                    searchCategories(keyword: "", page: 0, size: 100) {
+                        content {
+                            id
+                            name
+                        }
+                    }
+                }
+            `
+        };
+
+        try {
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(graphqlQuery)
+            });
+
+            const result = await response.json();
+            
+            if (result.data && result.data.searchCategories) {
+                const items = result.data.searchCategories.content;
+                if (items.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">Chưa có dữ liệu nào trong CSDL.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = items.map(item => `
+                    <tr>
+                        <td class="ps-4 fw-bold">#${item.id}</td>
+                        <td><span class="fw-semibold text-dark">${item.name || 'N/A'}</span></td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Chưa có dữ liệu hoặc sai Schema Query.</td></tr>`;
+            }
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Lỗi kết nối Server: ${error.message}</td></tr>`;
+        }
+    }
+
+    // HÀM THÊM MỚI BẢN GHI
+    async function submitData() {
+        const title = document.getElementById('inputTitle').value.trim();
+        if (!title) {
+            alert('Vui lòng nhập tên/tiêu đề!');
+            return;
+        }
+
+        // Mutation tạo danh mục theo schema GraphQL hiện tại
+        const mutation = {
+            query: `mutation CreateCategory($input: CategoryInput!) {
+                    createCategory(input: $input) {
+                        id
+                        name
+                    }
+                }`,
+            variables: { input: { name: title } }
+        };
+
+        try {
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(mutation)
+            });
+
+            const result = await response.json();
+            if (result.errors) {
+                alert('Lỗi: ' + result.errors[0].message);
+            } else {
+                alert('Thêm thành công!');
+                document.getElementById('inputTitle').value = '';
+                // Đóng modal
+                const modalEl = document.getElementById('addModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                // Load lại bảng
+                loadData();
+            }
+        } catch (err) {
+            alert('Lỗi kết nối: ' + err.message);
+        }
+    }
+
+    async function deleteItem(id) {
+        if (!confirm('Bạn có chắc muốn xóa danh mục này?')) return;
+        const response = await fetch('/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: 'mutation($id: ID!) { deleteCategory(id: $id) }',
+                variables: { id: id }
+            })
+        });
+        const result = await response.json();
+        if (result.errors || !result.data?.deleteCategory) {
+            alert(result.errors?.[0]?.message || 'Không tìm thấy danh mục.');
+            return;
+        }
+        loadData();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
